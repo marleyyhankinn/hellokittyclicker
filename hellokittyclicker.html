@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hello Kitty Clicker</title>
+
+  <!-- Google Fonts: Lexend for UI, Gaegu for headings -->
+  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Lexend:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#ffeef6;
+      --panel:#ffd7ec;
+      --accent:#ff77b7;
+      --muted:#f7cfe1;
+      --text:#4b2a3a;
+      --coin:#ffc0e6;
+    }
+    html,body{
+      height:100%;
+      margin:0;
+      font-family: "Lexend", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg,var(--bg),#fff);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .wrap{
+      max-width:980px;
+      margin:28px auto;
+      padding:18px;
+      box-sizing:border-box;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      margin-bottom:16px;
+    }
+    h1{
+      font-family:"Gaegu", "Lexend", cursive;
+      font-size:40px;
+      margin:0;
+      color:var(--accent);
+      letter-spacing:1px;
+    }
+    .sub{
+      font-size:14px;
+      opacity:0.9;
+      margin-top:6px;
+    }
+
+    .game{
+      display:grid;
+      grid-template-columns: 1fr 320px;
+      gap:16px;
+      align-items:start;
+    }
+
+    /* main game panel */
+    .panel{
+      background:var(--panel);
+      border-radius:16px;
+      padding:18px;
+      box-shadow: 0 6px 18px rgba(136,56,106,0.08);
+    }
+
+    .main-area{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:14px;
+    }
+
+    .kitty-button{
+      width:260px;
+      height:260px;
+      border-radius:50%;
+      background: radial-gradient(circle at 30% 25%, #fff, #ffdff0 40%, var(--accent));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:64px;
+      cursor:pointer;
+      user-select:none;
+      box-shadow: 0 10px 30px rgba(255,119,183,0.14);
+      border:6px solid #fff;
+      position:relative;
+      transition: transform 120ms ease;
+    }
+    .kitty-button:active{ transform: scale(0.98); }
+
+    .kitty-face{
+      text-shadow: 0 4px 10px rgba(255,255,255,0.4);
+    }
+
+    .stats{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+
+    .stat{
+      background: linear-gradient(180deg,#fff, #ffe6f3);
+      padding:10px 14px;
+      border-radius:12px;
+      box-shadow: 0 4px 12px rgba(136,56,106,0.06);
+      min-width:130px;
+      text-align:center;
+      font-size:14px;
+    }
+    .stat .big{ font-weight:600; font-size:20px; }
+
+    .shop{
+      margin-top:12px;
+      display:flex;
+      gap:10px;
+      flex-direction:column;
+    }
+
+    .shop .row{
+      display:flex;
+      gap:8px;
+    }
+
+    .btn{
+      background:linear-gradient(180deg,#fff, #ffdff0);
+      border-radius:10px;
+      padding:8px 12px;
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,0.6);
+      box-shadow: 0 6px 14px rgba(136,56,106,0.06);
+      font-weight:600;
+    }
+    .btn:disabled{ opacity:0.45; cursor:not-allowed; }
+
+    .shop-item{
+      background:linear-gradient(180deg,#fff, #ffe6f3);
+      border-radius:12px;
+      padding:10px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      box-shadow: 0 6px 14px rgba(136,56,106,0.04);
+      justify-content:space-between;
+    }
+    .mini{
+      font-size:12px;
+      opacity:0.9;
+    }
+
+    /* right panel */
+    .side{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .side .card{
+      background:linear-gradient(180deg,#fff, #fff5fb);
+      padding:12px;
+      border-radius:12px;
+      box-shadow: 0 6px 18px rgba(136,56,106,0.04);
+    }
+    .side .card h3{
+      margin:0 0 8px 0;
+      font-family:"Gaegu";
+      font-size:20px;
+      color:var(--accent);
+    }
+
+    .auto-list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .auto-row{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:center;
+      padding:8px;
+      border-radius:8px;
+      background:var(--muted);
+    }
+
+    .rebirth{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .floating{
+      position:absolute;
+      pointer-events:none;
+      transform:translate(-50%,-50%);
+      font-size:20px;
+      animation: floatUp 1100ms ease forwards;
+      opacity:0.95;
+      filter:drop-shadow(0 6px 10px rgba(171,54,114,0.12));
+    }
+    @keyframes floatUp{
+      0%{ transform:translate(-50%,0) scale(1); opacity:1; }
+      100%{ transform:translate(-50%,-120px) scale(1.1); opacity:0; }
+    }
+
+    footer{
+      margin-top:14px;
+      font-size:12px;
+      opacity:0.85;
+      text-align:center;
+    }
+
+    /* responsive */
+    @media (max-width:900px){
+      .game{ grid-template-columns: 1fr; }
+      .kitty-button{ width:220px; height:220px; font-size:56px; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div style="font-size:36px">🐱</div>
+      <div>
+        <h1>Hello Kitty Clicker</h1>
+        <div class="sub">Tap to earn kitty coins. Save is automatic.</div>
+      </div>
+    </header>
+
+    <div class="game">
+      <div class="panel">
+        <div class="main-area">
+          <div id="kittyBtn" class="kitty-button" title="Click for money">
+            <div class="kitty-face">😺</div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="mini">Coins</div>
+              <div id="coins" class="big">0</div>
+            </div>
+            <div class="stat">
+              <div class="mini">Per click</div>
+              <div id="perClick" class="big">1</div>
+            </div>
+            <div class="stat">
+              <div class="mini">Auto income /s</div>
+              <div id="autoIncome" class="big">0</div>
+            </div>
+          </div>
+
+          <div class="shop">
+            <div class="shop-item">
+              <div>
+                <div style="font-weight:700">Tap Power</div>
+                <div class="mini">Increase coins per tap</div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <div id="tapPowerCost" class="mini">Cost 10</div>
+                <button id="buyTap" class="btn">Buy</button>
+              </div>
+            </div>
+
+            <div class="shop-item">
+              <div>
+                <div style="font-weight:700">Auto Kitty</div>
+                <div class="mini">Generates coins every second</div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <div id="autoCost" class="mini">Cost 50</div>
+                <button id="buyAuto" class="btn">Buy</button>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:8px">
+              <button id="upgradeAuto" class="btn">Upgrade Auto</button>
+              <button id="resetProgress" class="btn">Hard Reset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="card">
+          <h3>Auto Kitties</h3>
+          <div class="auto-list" id="autoList">
+            <div style="opacity:0.6">No auto kitties yet</div>
+          </div>
+        </div>
+
+        <div class="card rebirth">
+          <h3>Rebirth</h3>
+          <div>
+            <div class="mini">Rebirth multiplies your earnings but resets coins and upgrades</div>
+            <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+              <div id="rebirthInfo" style="flex:1">Next rebirth cost: 1,000,000</div>
+              <button id="rebirthBtn" class="btn">Rebirth</button>
+            </div>
+            <div style="margin-top:8px">
+              <div class="mini">Rebirths: <span id="rebirthCount">0</span></div>
+              <div class="mini">Current multiplier: <span id="globalMult">1</span>x</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Save status</h3>
+          <div class="mini">Auto save to browser local storage</div>
+          <div style="margin-top:8px">
+            <div class="mini">Last saved: <span id="lastSaved">never</span></div>
+            <div style="margin-top:8px">
+              <button id="exportBtn" class="btn">Export Save</button>
+              <button id="importBtn" class="btn">Import Save</button>
+            </div>
+            <input id="importText" style="width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1px solid #fff;display:none" placeholder="Paste save json then press Import" />
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer>
+      Tip: Click the big kitty face to earn coins. Unlock auto kitties and rebirth to speed up progress.
+    </footer>
+  </div>
+
+  <script>
+    // Game state and defaults
+    const DEFAULT = {
+      coins: 0,
+      perClickBase: 1,
+      tapLevel: 0,
+      autoCount: 0,
+      autoPower: 1,
+      autoLevel: 0,
+      globalMult: 1,
+      rebirths: 0,
+    };
+
+    // load from localStorage or default
+    let state = load() || {...DEFAULT};
+
+    // Derived values and costs
+    function format(n){
+      if(n >= 1e9) return (n/1e9).toFixed(2) + "b";
+      if(n >= 1e6) return (n/1e6).toFixed(2) + "m";
+      if(n >= 1e3) return (n/1e3).toFixed(2) + "k";
+      return Math.floor(n).toString();
+    }
+
+    function tapPowerCost(){
+      return Math.floor(10 * Math.pow(1.8, state.tapLevel));
+    }
+    function autoCost(){
+      return Math.floor(50 * Math.pow(2.2, state.autoCount));
+    }
+    function upgradeAutoCost(){
+      return Math.floor(200 * Math.pow(3, state.autoLevel));
+    }
+    function nextRebirthCost(){
+      // first rebirth 1e6 next 1e7 next 1e8 etc
+      return Math.floor(1e6 * Math.pow(10, state.rebirths));
+    }
+
+    // Elements
+    const coinsEl = document.getElementById('coins');
+    const perClickEl = document.getElementById('perClick');
+    const autoIncomeEl = document.getElementById('autoIncome');
+    const kittyBtn = document.getElementById('kittyBtn');
+    const tapPowerCostEl = document.getElementById('tapPowerCost');
+    const autoCostEl = document.getElementById('autoCost');
+    const buyTap = document.getElementById('buyTap');
+    const buyAuto = document.getElementById('buyAuto');
+    const autoList = document.getElementById('autoList');
+    const upgradeAuto = document.getElementById('upgradeAuto');
+    const rebirthBtn = document.getElementById('rebirthBtn');
+    const rebirthInfo = document.getElementById('rebirthInfo');
+    const rebirthCountEl = document.getElementById('rebirthCount');
+    const globalMultEl = document.getElementById('globalMult');
+    const lastSavedEl = document.getElementById('lastSaved');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importText = document.getElementById('importText');
+    const resetBtn = document.getElementById('resetProgress');
+
+    // initial render
+    function updateUI(){
+      coinsEl.textContent = format(state.coins);
+      const perClick = state.perClickBase * (1 + state.tapLevel*0.5) * state.globalMult;
+      perClickEl.textContent = Math.floor(perClick);
+      const autoIncome = state.autoCount * state.autoPower * state.globalMult;
+      autoIncomeEl.textContent = format(autoIncome);
+      tapPowerCostEl.textContent = 'Cost ' + format(tapPowerCost());
+      autoCostEl.textContent = 'Cost ' + format(autoCost());
+      rebirthInfo.textContent = 'Next rebirth cost: ' + format(nextRebirthCost());
+      rebirthCountEl.textContent = state.rebirths;
+      globalMultEl.textContent = state.globalMult;
+      // auto list
+      autoList.innerHTML = '';
+      if(state.autoCount === 0){
+        const d = document.createElement('div');
+        d.style.opacity = '0.6';
+        d.textContent = 'No auto kitties yet';
+        autoList.appendChild(d);
+      } else {
+        for(let i=1;i<=state.autoCount;i++){
+          const row = document.createElement('div');
+          row.className = 'auto-row';
+          row.innerHTML = '<div>Kitty ' + i + '</div><div class="mini">+' + Math.floor(state.autoPower*state.globalMult) + '/s</div>';
+          autoList.appendChild(row);
+        }
+      }
+
+      // enable/disable buttons
+      buyTap.disabled = state.coins < tapPowerCost();
+      buyAuto.disabled = state.coins < autoCost();
+      upgradeAuto.disabled = state.coins < upgradeAutoCost();
+      rebirthBtn.disabled = state.coins < nextRebirthCost();
+
+      // last saved time
+      const t = localStorage.getItem('hk_lastsave');
+      lastSavedEl.textContent = t ? t : 'never';
+    }
+
+    // click animation
+    function spawnFloat(x,y,text){
+      const el = document.createElement('div');
+      el.className = 'floating';
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.textContent = text;
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),1200);
+    }
+
+    // click handler
+    kittyBtn.addEventListener('click', (e) => {
+      const perClick = state.perClickBase * (1 + state.tapLevel*0.5) * state.globalMult;
+      const gained = Math.floor(perClick);
+      state.coins += gained;
+      updateUI();
+      // spawn floating text above button
+      const rect = kittyBtn.getBoundingClientRect();
+      const x = rect.left + rect.width/2;
+      const y = rect.top + 40;
+      spawnFloat(x,y,'+' + format(gained) + ' 💗');
+      save();
+    });
+
+    buyTap.addEventListener('click', () => {
+      const cost = tapPowerCost();
+      if(state.coins >= cost){
+        state.coins -= cost;
+        state.tapLevel += 1;
+        updateUI();
+        save();
+      }
+    });
+
+    buyAuto.addEventListener('click', () => {
+      const cost = autoCost();
+      if(state.coins >= cost){
+        state.coins -= cost;
+        state.autoCount += 1;
+        updateUI();
+        save();
+      }
+    });
+
+    upgradeAuto.addEventListener('click', () => {
+      const cost = upgradeAutoCost();
+      if(state.coins >= cost){
+        state.coins -= cost;
+        state.autoLevel += 1;
+        state.autoPower = Math.floor(1 * Math.pow(1.8, state.autoLevel));
+        updateUI();
+        save();
+      }
+    });
+
+    // Auto income loop once per second
+    setInterval(() => {
+      const income = state.autoCount * state.autoPower * state.globalMult;
+      if(income > 0){
+        state.coins += income;
+        updateUI();
+        save();
+        // small floating coin
+        const rect = kittyBtn.getBoundingClientRect();
+        spawnFloat(rect.left + Math.random()*rect.width, rect.top + 20, '+' + format(income) + ' 💗');
+      }
+    }, 1000);
+
+    // Rebirth logic
+    rebirthBtn.addEventListener('click', () => {
+      const cost = nextRebirthCost();
+      if(state.coins < cost) return;
+      // Deduct cost and perform rebirth effect
+      state.coins = 0;
+      state.tapLevel = 0;
+      state.autoCount = 0;
+      state.autoLevel = 0;
+      state.autoPower = 1;
+      // multiplier logic: first rebirth x2 second rebirth x5 third and beyond x10
+      if(state.rebirths === 0) state.globalMult *= 2;
+      else if(state.rebirths === 1) state.globalMult *= 5;
+      else state.globalMult *= 10;
+      state.rebirths += 1;
+      updateUI();
+      save();
+      alert('Rebirth successful! Your earnings are now multiplied by ' + state.globalMult + 'x');
+    });
+
+    // Save load export import
+    function save(){
+      try{
+        localStorage.setItem('helloKittyClicker_v1', JSON.stringify(state));
+        const now = new Date().toLocaleString();
+        localStorage.setItem('hk_lastsave', now);
+        lastSavedEl.textContent = now;
+      } catch(e){
+        console.error('save failed',e);
+      }
+    }
+    function load(){
+      try{
+        const raw = localStorage.getItem('helloKittyClicker_v1');
+        if(!raw) return null;
+        return JSON.parse(raw);
+      } catch(e){
+        return null;
+      }
+    }
+
+    exportBtn.addEventListener('click', () => {
+      const data = JSON.stringify(state);
+      // copy to clipboard if possible
+      if(navigator.clipboard){
+        navigator.clipboard.writeText(data).then(()=> alert('Save copied to clipboard. Paste it somewhere safe.'));
+      } else {
+        prompt('Copy this save data', data);
+      }
+    });
+
+    importBtn.addEventListener('click', () => {
+      // show textarea if empty
+      if(importText.style.display === 'none'){
+        importText.style.display = 'block';
+        importText.value = '';
+        importText.focus();
+        return;
+      }
+      try{
+        const obj = JSON.parse(importText.value);
+        if(obj && typeof obj === 'object'){
+          state = {...DEFAULT, ...obj};
+          save();
+          updateUI();
+          alert('Import successful');
+          importText.style.display = 'none';
+        } else throw new Error('invalid');
+      } catch(e){
+        alert('Invalid save data. Make sure you pasted valid JSON.');
+      }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      if(confirm('This will reset everything including rebirths. Are you sure?')){
+        state = {...DEFAULT};
+        save();
+        updateUI();
+      }
+    });
+
+    // auto save every 10 seconds
+    setInterval(save, 10000);
+
+    // initialize derived
+    state.autoPower = state.autoPower || 1;
+    updateUI();
+
+    // keyboard shortcuts for fun
+    window.addEventListener('keydown', (e) => {
+      if(e.key === 'k') kittyBtn.click();
+    });
+  </script>
+</body>
+</html>
